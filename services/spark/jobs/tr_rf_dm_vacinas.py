@@ -22,7 +22,7 @@ import os
 # %%
 spark = SparkSession.Builder() \
     .master(os.environ["SPARK_MASTER_URI"]) \
-    .appName("covid_19_vacination_data_cleaning") \
+    .appName("covid_19_vacination_dm_vacinas") \
     .config("spark.driver.maxResultSize", "2g") \
     .getOrCreate()
 
@@ -53,7 +53,7 @@ df_vacina = (
 )
 
 # %%
-df_vacina.write.format('parquet').save('./data/refined/dm_vacina')
+df_vacina.write.mode('overwrite').format('parquet').save('./data/refined/dm_vacinas')
 
 # %%
 df_vacina.write.format('jdbc').options(
