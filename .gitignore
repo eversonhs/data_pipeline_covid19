@@ -1,0 +1,3 @@
+__pycache__
+spark/data/*
+docker_images/**/bin/*
