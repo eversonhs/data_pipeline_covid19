@@ -26,7 +26,7 @@ services:
           cpus: '2'
           memory: 4G
 
-  spark-workers:
+  spark-worker:
     image: apache/spark-py
     user: root
     command: >
@@ -49,7 +49,6 @@ services:
         reservations:
           cpus: '2'
           memory: 2G
-
       mode: replicated
       replicas: 8
 
@@ -73,4 +72,3 @@ services:
         reservations:
           cpus: 2
           memory: 2G
-
