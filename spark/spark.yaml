@@ -1,0 +1,76 @@
+version: "3.9"
+services:
+  spark-master:
+    image: apache/spark-py
+    container_name: spark-master
+    user: root
+    command: >
+      sh -c "cd /opt/spark/sbin/ &&
+        ./start-master.sh &&
+        tail -f -n 50 /opt/spark/logs/*
+      "
+    ports:
+      - "3000:8080"
+      - "7077:7077"
+    env_file:
+      - spark.env
+    volumes:
+      - ./data:/opt/spark/work-dir/data
+      - ./jobs:/opt/spark/work-dir/jobs
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '2'
+          memory: 1G
+
+  spark-workers:
+    image: apache/spark-py
+    user: root
+    command: >
+      sh -c "cd /opt/spark/sbin/ &&
+        ./start-worker.sh spark://spark-master:7077 -c 2 -m 1G &&
+        tail -f -n 50 /opt/spark/logs/*
+      "
+    depends_on:
+      - spark-master
+    env_file:
+      - spark.env
+    volumes:
+      - ./data:/opt/spark/work-dir/data
+      - ./jobs:/opt/spark/work-dir/jobs
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '2'
+          memory: 2G
+
+      mode: replicated
+      replicas: 4
+
+  spark-client:
+    image: spark-client
+    container_name: spark-client
+    user: root
+    command: tail -f /dev/null
+    env_file:
+      - spark.env
+    volumes:
+      - ./data:/opt/spark/work-dir/data
+      - ./jobs:/opt/spark/work-dir/jobs
+    depends_on:
+      - spark-master
+    deploy:
+      resources:
+        limits:
+          cpus: 2
+          memory: 2G
+        reservations:
+          cpus: 2
+          memory: 2G
+
