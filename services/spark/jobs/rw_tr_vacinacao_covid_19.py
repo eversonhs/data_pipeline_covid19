@@ -44,4 +44,8 @@ df_vacinacao = (
 )
 
 # %%
+
+
+
+# %%
 df_vacinacao.write.format('parquet').mode('overwrite').save('./data/trusted/vacinacao_covid19')
