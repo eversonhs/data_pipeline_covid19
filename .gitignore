@@ -1,4 +1,5 @@
 __pycache__
-spark/data/*
 docker_images/**/bin/*
 *.env
+services/**/data
+*.csv
