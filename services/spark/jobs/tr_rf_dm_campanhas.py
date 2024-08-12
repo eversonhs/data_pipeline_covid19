@@ -1,5 +1,5 @@
 # %% [markdown]
-# # Tabela dm_vacinas de dados de vacinação contra COVID-19
+# # Tabela dm_campanhas de dados de vacinação contra COVID-19
 
 # %% [markdown]
 # ## 1.0. Configurações
@@ -28,6 +28,7 @@ spark = SparkSession.Builder() \
 
 # %%
 data_path = Path(os.environ["DATA_PATH"])
+tablename = 'dm_campanhas'
 
 # %% [markdown]
 # ## 2.0. Leitura dos dados
@@ -54,12 +55,12 @@ df_campanhas = (
 )
 
 # %%
-df_campanhas.write.mode('overwrite').format('parquet').save('./data/refined/dm_campanhas')
+df_campanhas.write.mode('overwrite').format('parquet').save(f'./data/refined/{tablename}')
 
 # %%
 df_campanhas.write.format('jdbc').options(
     url=f'jdbc:mysql://{os.environ["MYSQL_ADDRESS"]}/{os.environ["MYSQL_DATABASE"]}',
-    dbtable='dm_campanhas',
+    dbtable=tablename,
     driver='com.mysql.cj.jdbc.Driver',
     user=os.environ["MYSQL_USER"],
     password=os.environ["MYSQL_PASSWORD"]

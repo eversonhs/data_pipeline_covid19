@@ -28,6 +28,7 @@ spark = SparkSession.Builder() \
 
 # %%
 data_path = Path(os.environ["DATA_PATH"])
+tablename = 'dm_vacinas'
 
 # %% [markdown]
 # ## 2.0. Leitura dos dados
@@ -53,12 +54,12 @@ df_vacina = (
 )
 
 # %%
-df_vacina.write.mode('overwrite').format('parquet').save('./data/refined/dm_vacinas')
+df_vacina.write.mode('overwrite').format('parquet').save(f'./data/refined/{tablename}')
 
 # %%
 df_vacina.write.format('jdbc').options(
     url=f'jdbc:mysql://{os.environ["MYSQL_ADDRESS"]}/{os.environ["MYSQL_DATABASE"]}',
-    dbtable='dm_vacinas',
+    dbtable=tablename,
     driver='com.mysql.cj.jdbc.Driver',
     user=os.environ["MYSQL_USER"],
     password=os.environ["MYSQL_PASSWORD"]
