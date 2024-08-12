@@ -12,7 +12,7 @@
 
 # %%
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, lit, xxhash64
+from pyspark.sql.functions import col, xxhash64
 from pathlib import Path
 import os
 
@@ -20,15 +20,15 @@ import os
 # ### 1.2. Configuração do contexto Spark
 
 # %%
-spark = SparkSession.Builder() \
-    .master(os.environ["SPARK_MASTER_URI"]) \
-    .appName("covid_19_vacination_dm_campanhas") \
-    .config("spark.driver.maxResultSize", "2g") \
-    .getOrCreate()
-
-# %%
 data_path = Path(os.environ["DATA_PATH"])
 tablename = 'dm_campanhas'
+
+# %%
+spark = SparkSession.Builder() \
+    .master(os.environ["SPARK_MASTER_URI"]) \
+    .appName(f"covid_19_vacination_{tablename}") \
+    .config("spark.driver.maxResultSize", "2g") \
+    .getOrCreate()
 
 # %% [markdown]
 # ## 2.0. Leitura dos dados
