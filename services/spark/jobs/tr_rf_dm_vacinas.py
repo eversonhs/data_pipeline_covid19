@@ -50,7 +50,7 @@ df_vacina = (
 # %%
 df_vacina = (
     df_vacina
-    .withColumn('SK_DM_VACINA', xxhash64('CD_VACINA', 'DSC_LOTE'))
+    .withColumn('SK_DM_VACINAS', xxhash64('CD_VACINA', 'DSC_LOTE'))
 )
 
 # %%

@@ -53,7 +53,7 @@ df_paciente = (
 # %%
 df_paciente = (
     df_paciente
-    .withColumn('SK_DM_PACIENTE', xxhash64('CD_PACIENTE'))
+    .withColumn('SK_DM_PACIENTES', xxhash64('CD_PACIENTE'))
 )
 
 # %%
