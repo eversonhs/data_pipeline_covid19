@@ -3,7 +3,7 @@ services:
   mysql-db:
     image: mysql:8.0
     container_name: mysql-db
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=8G --innodb-buffer-pool-instances=16
     restart: always
     env_file: mysql.env
     ports:
