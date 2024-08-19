@@ -6,7 +6,7 @@
         {
             "label": "Submit Spark Job",
             "type": "shell",
-            "command": "docker exec spark-client bash -c 'spark-submit --master $SPARK_MASTER_URI --jars $MYSQL_CONNECTORJ_PATH --driver-class-path $MYSQL_CONNECTORJ_PATH ./jobs/${fileBasename}'"
+            "command": "docker exec spark-client bash -c 'spark-submit --master $SPARK_MASTER_URI --jars $MYSQL_CONNECTORJ_PATH --driver-class-path $MYSQL_CONNECTORJ_PATH --executor-memory 1g --num-executors 2 --executor-cores 1 ./jobs/${fileBasename}'"
         }
     ]
 }
