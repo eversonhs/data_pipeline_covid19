@@ -45,7 +45,7 @@ df_estabelecimentos = (
         col('estabelecimento_razaoSocial').alias('DSC_RAZAO_SOCIAL'),
         col('estalecimento_noFantasia').alias('NM_FANTASIA'),
     )
-    .distinct()
+    .dropDuplicates(subset=['CD_ESTABELECIMENTO'])
 )
 
 # %%
