@@ -12,7 +12,7 @@
 
 # %%
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, xxhash64
+from pyspark.sql.functions import col, xxhash64, lit
 from pathlib import Path
 import os
 
@@ -45,8 +45,10 @@ df_vacinacao = (
     .withColumnRenamed('vacina_categoria_codigo', 'CD_CATEGORIA_GRUPO_ATENDIMENTO')
     .withColumnRenamed('vacina_descricao_dose', 'DSC_DOSE')
     .withColumnRenamed('estabelecimento_valor', 'CD_ESTABELECIMENTO')
-    .withColumnRenamed('paciente_endereco_cep', 'CD_CEP')
-    .withColumnRenamed('paciente_endereco_coIbgeMunicipio', 'CD_MUNICIPIO_IBGE')
+    .withColumnRenamed('paciente_endereco_coPais', 'CD_PAIS_PACIENTE')
+    .withColumnRenamed('paciente_endereco_coIbgeMunicipio', 'CD_MUNICIPIO_IBGE_PACIENTE')
+    .withColumn('CD_PAIS_ESTABELECIMENTO', lit(10))
+    .withColumnRenamed('estabelecimento_municipio_codigo', 'CD_MUNICIPIO_IBGE_ESTABELECIMENTO')
     .withColumnRenamed('vacina_lote', 'DSC_LOTE')
     .withColumnRenamed('vacina_codigo', 'CD_VACINA')
 )
@@ -105,7 +107,7 @@ dm_municipios = (
     .load("/".join([os.environ["DATA_PATH"], 'refined/dm_municipios']))
     .select(
         'CD_MUNICIPIO_IBGE',
-        'CD_CEP',
+        'CD_PAIS',
         'SK_DM_MUNICIPIOS'
     )
 )
@@ -116,13 +118,33 @@ df_vacinacao = (
     .join(dm_vacinas, on=['CD_VACINA', 'DSC_LOTE'], how='left')
     .join(dm_campanhas, on=['CD_GRUPO_ATENDIMENTO', 'CD_CATEGORIA_GRUPO_ATENDIMENTO', 'DSC_DOSE'], how='left')
     .join(dm_estabelecimentos, on=['CD_ESTABELECIMENTO'], how='left')
-    # .join(dm_municipios, on=['CD_MUNICIPIO_IBGE', 'CD_CEP'], how='left')
+    .join(
+        (
+            dm_municipios
+            .withColumnRenamed('SK_DM_MUNICIPIOS', 'SK_DM_MUNICIPIOS_PACIENTE')
+            .withColumnRenamed('CD_MUNICIPIO_IBGE', 'CD_MUNICIPIO_IBGE_PACIENTE')
+            .withColumnRenamed('CD_PAIS', 'CD_PAIS_PACIENTE')
+        ),
+        on=['CD_MUNICIPIO_IBGE_PACIENTE', 'CD_PAIS_PACIENTE'],
+        how='left'
+    )
+    .join(
+        (
+            dm_municipios
+            .withColumnRenamed('SK_DM_MUNICIPIOS', 'SK_DM_MUNICIPIOS_ESTABELECIMENTO')
+            .withColumnRenamed('CD_MUNICIPIO_IBGE', 'CD_MUNICIPIO_IBGE_ESTABELECIMENTO')
+            .withColumnRenamed('CD_PAIS', 'CD_PAIS_ESTABELECIMENTO')
+        ),
+        on=['CD_MUNICIPIO_IBGE_ESTABELECIMENTO', 'CD_PAIS_ESTABELECIMENTO'],
+        how='left'
+    )
     .select(
         'SK_DM_PACIENTES',
         'SK_DM_VACINAS',
         'SK_DM_CAMPANHAS',
         'SK_DM_ESTABELECIMENTOS',
-        # 'SK_DM_MUNICIPIOS',
+        'SK_DM_MUNICIPIOS_PACIENTE',
+        'SK_DM_MUNICIPIOS_ESTABELECIMENTO',
         col('document_id').alias('CD_VACINACAO'),
         col('vacina_dataAplicacao').alias('DT_VACINACAO')
         
