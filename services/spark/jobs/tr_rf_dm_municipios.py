@@ -12,7 +12,7 @@
 
 # %%
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, xxhash64
+from pyspark.sql.functions import col, xxhash64, lit
 from pathlib import Path
 import os
 
@@ -35,33 +35,57 @@ spark = SparkSession.Builder() \
 # ## 2.0. Leitura dos dados
 
 # %%
-df_enderecos_pacientes = (
+df_vacinacao = (
     spark
     .read
     .format('parquet')
     .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19']))
+)
+
+# %%
+df_enderecos_estabelecimentos = (
+    df_vacinacao
+    .select(
+        col('estabelecimento_municipio_codigo').alias('CD_MUNICIPIO_IBGE'),
+        lit(10).alias('CD_PAIS'),
+        col('estabelecimento_municipio_nome').alias('NM_MUNICIPIO'),
+        lit('BRASIL').alias('NM_PAIS'),
+        col('estabelecimento_uf').alias('SG_UF')
+    )
+    .dropDuplicates(subset=['CD_MUNICIPIO_IBGE'])
+)
+
+# %%
+df_enderecos_pacientes = (
+    df_vacinacao
     .select(
         col('paciente_endereco_coIbgeMunicipio').alias('CD_MUNICIPIO_IBGE'),
         col('paciente_endereco_coPais').alias('CD_PAIS'),
         col('paciente_endereco_nmMunicipio').alias('NM_MUNICIPIO'),
         col('paciente_endereco_nmPais').alias('NM_PAIS'),
-        col('paciente_endereco_uf').alias('SG_UF'),
-        col('paciente_endereco_cep').alias('CD_CEP'),
+        col('paciente_endereco_uf').alias('SG_UF')
     )
-    .distinct()
+    .dropDuplicates(subset=['CD_MUNICIPIO_IBGE', 'CD_PAIS'])
+)
+# %%
+dm_municipios = (
+    df_enderecos_estabelecimentos
+    .unionByName(df_enderecos_pacientes)
+    .dropDuplicates(subset=['CD_MUNICIPIO_IBGE', 'CD_PAIS'])
+    .dropna(subset=['CD_PAIS', 'NM_MUNICIPIO'], how='all')
 )
 
 # %%
-df_enderecos_pacientes = (
-    df_enderecos_pacientes
-    .withColumn('SK_DM_MUNICIPIOS', xxhash64('CD_MUNICIPIO_IBGE', 'CD_CEP'))
+dm_municipios = (
+    dm_municipios
+    .withColumn('SK_DM_MUNICIPIOS', xxhash64('CD_MUNICIPIO_IBGE', 'CD_PAIS'))
 )
 
 # %%
-df_enderecos_pacientes.write.mode('overwrite').format('parquet').save(f'./data/refined/{tablename}')
+dm_municipios.write.mode('overwrite').format('parquet').save(f'./data/refined/{tablename}')
 
 # %%
-df_enderecos_pacientes.write.format('jdbc').options(
+dm_municipios.write.format('jdbc').options(
     url=f'jdbc:mysql://{os.environ["MYSQL_ADDRESS"]}/{os.environ["MYSQL_DATABASE"]}',
     dbtable=tablename,
     driver='com.mysql.cj.jdbc.Driver',
