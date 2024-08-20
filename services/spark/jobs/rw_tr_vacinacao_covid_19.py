@@ -42,9 +42,30 @@ df_vacinacao = (
     .option('header', 'true')
     .load("/".join([os.environ["DATA_PATH"], 'part-00000-525841a6-ed1e-478f-89c5-61363266d156-c000.csv']))
 )
-
+print(dict(df_vacinacao.dtypes))
 # %%
+# ## 3.0. Tratamento dos dados
+# ### 3.1. campos textuais
+df_vacinacao = (
+    df_vacinacao
+    .select(
+        *[translate(trim(col(column)), 'ãâäöüẞáäçčďéěíĺľňóôõŕšťúůýžÄÖÜẞÁÃÂÄÇČĎÉĚÍĹĽŇÓÔÕŔŠŤÚŮÝŽṔ','aaaousaaccdeeillnooorstuuyzAOUSAAAACCDEEILLNOOORSTUUYZP').alias(column) if dict(df_vacinacao.dtypes)[column] == 'string' else col(column) for column in df_vacinacao.columns]
+    )
+)
 
+# ### 3.2. Campos nulos
+df_vacinacao = df_vacinacao.replace({
+    'None': None,
+    '': None,
+    'N/A': None,
+    'Pendente Identificacao': None
+})
+
+# ### 3.3. Campos específicos
+df_vacinacao = (
+    df_vacinacao
+    .withColumn('vacina_lote', upper(col('vacina_lote')))
+)
 
 
 # %%
