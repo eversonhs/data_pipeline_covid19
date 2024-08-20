@@ -45,7 +45,7 @@ df_vacina = (
         col('vacina_fabricante_nome').alias('NM_FABRICANTE'),
         col('vacina_nome').alias('NM_VACINA')
     )
-    .distinct()
+    .dropDuplicates(subset=['CD_VACINA', 'DSC_LOTE'])
 )
 # %%
 df_vacina = (
