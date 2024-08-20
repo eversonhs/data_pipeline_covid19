@@ -47,6 +47,8 @@ df_campanhas = (
         col('vacina_descricao_dose').alias('DSC_DOSE')
     )
     .distinct()
+    .dropna(subset=['NM_GRUPO_ATENDIMENTO'])
+    .dropDuplicates(['CD_GRUPO_ATENDIMENTO', 'CD_CATEGORIA_GRUPO_ATENDIMENTO', 'DSC_DOSE'])
 )
 # %%
 df_campanhas = (
