@@ -41,19 +41,18 @@ df_paciente = (
     .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19']))
     .select(
         col('paciente_id').alias('CD_PACIENTE'),
-        col('paciente_idade').alias('VL_IDADE'),
         col('paciente_dataNascimento').alias('DT_NASCIMENTO'),
         col('paciente_enumSexoBiologico').alias('SG_SEXO_BIOLOGICO'),
         col('paciente_racaCor_codigo').alias('CD_RACA_COR'),
         col('paciente_racaCor_valor').alias('DSC_RACA_CORD'),
         col('paciente_nacionalidade_enumNacionalidade').alias('CD_NACIONALIDADE')
     )
-    .distinct()
+    .dropDuplicates(subset=['CD_PACIENTE', 'CD_RACA_COR'])
 )
 # %%
 df_paciente = (
     df_paciente
-    .withColumn('SK_DM_PACIENTES', xxhash64('CD_PACIENTE'))
+    .withColumn('SK_DM_PACIENTES', xxhash64('CD_PACIENTE', 'CD_RACA_COR'))
 )
 
 # %%
