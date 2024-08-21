@@ -3,3 +3,6 @@ docker_images/**/bin/*
 *.env
 services/**/data
 *.csv
+**/logs/
+**/data/
+*.json
