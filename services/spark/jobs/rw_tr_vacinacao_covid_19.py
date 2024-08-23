@@ -40,9 +40,9 @@ df_vacinacao = (
     .option('inferSchema', 'true')
     .option('sep', ';')
     .option('header', 'true')
-    .load("/".join([os.environ["DATA_PATH"], 'part-00000-525841a6-ed1e-478f-89c5-61363266d156-c000.csv']))
+    .load("/".join([os.environ["DATA_PATH"], 'raw\vacinacao_covid_19\csv\part-00000-525841a6-ed1e-478f-89c5-61363266d156-c000.csv']))
 )
-print(dict(df_vacinacao.dtypes))
+
 # %%
 # ## 3.0. Tratamento dos dados
 # ### 3.1. campos textuais
