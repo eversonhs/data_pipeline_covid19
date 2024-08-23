@@ -2,12 +2,13 @@ import requests
 from pathlib import Path
 import os
 import sys
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 import logging
 import json
 
 # Execution Date
 today = datetime.now(UTC)
+date_d_1 = today - timedelta(days=30)
 data_directory = Path('./data')
 # Logging config
 log_path = Path(os.environ["INGEST_API_LOG_PATH"])
@@ -43,7 +44,7 @@ query = {
     "size": 10000,
     "query": {
         "match": {
-            "vacina_dataAplicacao": today.strftime('%Y-%m-%dT00:00:00.000Z')
+            "vacina_dataAplicacao": date_d_1.strftime('%Y-%m-%dT00:00:00.000Z')
         }
     },
     "sort": [
@@ -53,7 +54,7 @@ query = {
 }
 
 # Data directory
-partitioning_folders='{0:4d}/{1:2d}/{2:2d}'.format(today.year, today.month, today.day)
+partitioning_folders='{0:4d}/{1:02d}/{2:02d}'.format(date_d_1.year, date_d_1.month, date_d_1.day)
 file_directory = data_directory.joinpath(partitioning_folders)
 file_directory.mkdir(parents=True, exist_ok=True)
 
@@ -61,7 +62,7 @@ file_directory.mkdir(parents=True, exist_ok=True)
 getting_data = True
 iterator = 1
 while getting_data:
-    filename = f'{today.strftime('%Y-%m-%d')}_{iterator}.json'
+    filename = f'{date_d_1.strftime('%Y-%m-%d')}_{iterator}.json'
     
     filepath = file_directory.joinpath(filename)
     with open(filepath, 'w+') as file:
