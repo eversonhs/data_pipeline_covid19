@@ -6,7 +6,15 @@
         {
             "label": "Submit Spark Job",
             "type": "shell",
-            "command": "docker exec spark-client bash -c 'spark-submit --master $SPARK_MASTER_URI --jars $MYSQL_CONNECTORJ_PATH --driver-class-path $MYSQL_CONNECTORJ_PATH --executor-memory 1g --num-executors 2 --executor-cores 1 ./jobs/${fileBasename}'"
+            "command": "docker exec spark-client bash -c 'spark-submit --master $SPARK_MASTER_URI --jars $MYSQL_CONNECTORJ_PATH --driver-class-path $MYSQL_CONNECTORJ_PATH --executor-memory 1g --num-executors 2 --executor-cores 1 ./jobs/${fileBasename} ${input:date}'"
         }
+    ],
+    "inputs": [
+        {
+            "id": "date",
+            "description": "Execution Date",
+            "default": "--date=2024-07-24",
+            "type": "promptString"
+        },
     ]
 }
