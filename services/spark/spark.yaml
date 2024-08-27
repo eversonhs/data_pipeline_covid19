@@ -11,7 +11,6 @@ services:
       "
     ports:
       - "3000:8080"
-      - "7077:7077"
     env_file:
       - spark.env
     volumes:
@@ -31,7 +30,7 @@ services:
     user: root
     command: >
       sh -c "cd /opt/spark/sbin/ &&
-        ./start-worker.sh spark://spark-master:7077 -c 2 -m 2G &&
+        ./start-worker.sh spark://spark-master:7077 -c 4 -m 8G &&
         tail -f -n 50 /opt/spark/logs/*
       "
     depends_on:
@@ -44,13 +43,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 3G
+          cpus: '4'
+          memory: 10G
         reservations:
-          cpus: '2'
-          memory: 3G
+          cpus: '4'
+          memory: 10G
       mode: replicated
-      replicas: 4
+      replicas: 2
 
   spark-client:
     image: spark-client
