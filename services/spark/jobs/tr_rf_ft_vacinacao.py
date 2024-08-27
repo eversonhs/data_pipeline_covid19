@@ -39,7 +39,7 @@ df_vacinacao = (
     spark
     .read
     .format('parquet')
-    .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19']))
+    .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19/csv']))
     .withColumnRenamed('paciente_id', 'CD_PACIENTE')
     .withColumnRenamed('vacina_grupoAtendimento_codigo', 'CD_GRUPO_ATENDIMENTO')
     .withColumnRenamed('vacina_categoria_codigo', 'CD_CATEGORIA_GRUPO_ATENDIMENTO')
@@ -149,6 +149,7 @@ df_vacinacao = (
         col('vacina_dataAplicacao').alias('DT_VACINACAO')
         
     )
+    .dropDuplicates(subset=['CD_VACINACAO'])
     .withColumn('SK_FT_VACINACAO', xxhash64('CD_VACINACAO'))
 )
 
@@ -157,9 +158,9 @@ df_vacinacao.write.mode('overwrite').format('parquet').save(f'./data/refined/{ta
 
 # %%
 df_vacinacao.write.format('jdbc').options(
-    url=f'jdbc:mysql://{os.environ["MYSQL_ADDRESS"]}/{os.environ["MYSQL_DATABASE"]}',
+    url=f'jdbc:postgresql://{os.environ["POSTGRES_ADDRESS"]}/{os.environ["POSTGRES_DB"]}',
     dbtable=tablename,
-    driver='com.mysql.cj.jdbc.Driver',
-    user=os.environ["MYSQL_USER"],
-    password=os.environ["MYSQL_PASSWORD"]
+    driver='org.postgresql.Driver',
+    user=os.environ["POSTGRES_USER"],
+    password=os.environ["POSTGRES_PASSWORD"]
 ).mode('overwrite').save()

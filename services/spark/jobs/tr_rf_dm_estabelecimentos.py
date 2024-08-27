@@ -39,7 +39,7 @@ df_estabelecimentos = (
     spark
     .read
     .format('parquet')
-    .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19']))
+    .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19/csv']))
     .select(
         col('estabelecimento_valor').alias('CD_ESTABELECIMENTO'),
         col('estabelecimento_razaoSocial').alias('DSC_RAZAO_SOCIAL'),
@@ -59,9 +59,9 @@ df_estabelecimentos.write.mode('overwrite').format('parquet').save(f'./data/refi
 
 # %%
 df_estabelecimentos.write.format('jdbc').options(
-    url=f'jdbc:mysql://{os.environ["MYSQL_ADDRESS"]}/{os.environ["MYSQL_DATABASE"]}',
+    url=f'jdbc:postgresql://{os.environ["POSTGRES_ADDRESS"]}/{os.environ["POSTGRES_DB"]}',
     dbtable=tablename,
-    driver='com.mysql.cj.jdbc.Driver',
-    user=os.environ["MYSQL_USER"],
-    password=os.environ["MYSQL_PASSWORD"]
+    driver='org.postgresql.Driver',
+    user=os.environ["POSTGRES_USER"],
+    password=os.environ["POSTGRES_PASSWORD"]
 ).mode('overwrite').save()

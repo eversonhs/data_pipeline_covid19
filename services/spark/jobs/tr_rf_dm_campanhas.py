@@ -27,7 +27,7 @@ tablename = 'dm_campanhas'
 spark = SparkSession.Builder() \
     .master(os.environ["SPARK_MASTER_URI"]) \
     .appName(f"covid_19_vacination_{tablename}") \
-    .config("spark.driver.maxResultSize", "2g") \
+    .config("spark.driver.maxResultSize", "8g") \
     .getOrCreate()
 
 # %% [markdown]
@@ -38,7 +38,7 @@ df_campanhas = (
     spark
     .read
     .format('parquet')
-    .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19']))
+    .load("/".join([os.environ["DATA_PATH"], 'trusted/vacinacao_covid19/csv']))
     .select(
         col('vacina_grupoAtendimento_codigo').alias('CD_GRUPO_ATENDIMENTO'),
         col('vacina_grupoAtendimento_nome').alias('NM_GRUPO_ATENDIMENTO'),
@@ -61,9 +61,9 @@ df_campanhas.write.mode('overwrite').format('parquet').save(f'./data/refined/{ta
 
 # %%
 df_campanhas.write.format('jdbc').options(
-    url=f'jdbc:mysql://{os.environ["MYSQL_ADDRESS"]}/{os.environ["MYSQL_DATABASE"]}',
+    url=f'jdbc:postgresql://{os.environ["POSTGRES_ADDRESS"]}/{os.environ["POSTGRES_DB"]}',
     dbtable=tablename,
-    driver='com.mysql.cj.jdbc.Driver',
-    user=os.environ["MYSQL_USER"],
-    password=os.environ["MYSQL_PASSWORD"]
+    driver='org.postgresql.Driver',
+    user=os.environ["POSTGRES_USER"],
+    password=os.environ["POSTGRES_PASSWORD"]
 ).mode('overwrite').save()

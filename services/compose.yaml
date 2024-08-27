@@ -1,4 +1,5 @@
 version: "3.9"
 include:
+  - airflow/airflow.yaml
   - spark/spark.yaml
-  - db/mysql.yaml
+  - db/postgresql.yaml
