@@ -1,5 +1,5 @@
 __pycache__
-docker_images/**/bin/*
+**/bin/*
 *.env
 services/**/data
 *.csv
