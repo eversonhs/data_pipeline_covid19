@@ -121,4 +121,3 @@ output_directory = "/".join([
 ])
 
 df_vacinacao.write.format('parquet').mode('overwrite').save(output_directory)
-# ### 3.1. campos textuais

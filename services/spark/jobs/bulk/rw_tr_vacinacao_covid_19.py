@@ -40,7 +40,7 @@ df_vacinacao = (
     .option('inferSchema', 'true')
     .option('sep', ';')
     .option('header', 'true')
-    .load("/".join([os.environ["DATA_PATH"], 'raw\vacinacao_covid_19\csv\part-00000-525841a6-ed1e-478f-89c5-61363266d156-c000.csv']))
+    .load("/".join([os.environ["DATA_PATH"], 'raw\vacinacao_covid_19\csv\*']))
 )
 
 # %%
@@ -69,4 +69,9 @@ df_vacinacao = (
 
 
 # %%
-df_vacinacao.write.format('parquet').mode('overwrite').save('./data/trusted/vacinacao_covid19')
+output_directory = "/".join([
+    os.environ["DATA_PATH"],
+    f'trusted/vacinacao_covid19/csv'
+])
+
+df_vacinacao.write.format('parquet').mode('overwrite').save(output_directory)

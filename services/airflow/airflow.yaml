@@ -53,6 +53,7 @@ x-airflow-common:
   build: .
   env_file:
     - ../spark/spark.env
+    - ./dags.env
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
