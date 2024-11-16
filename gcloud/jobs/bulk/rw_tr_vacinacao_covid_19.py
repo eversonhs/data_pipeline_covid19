@@ -20,9 +20,9 @@ import os
 # ### 1.2. Configuração do contexto Spark
 
 temp_bucket = "gs://pgii-dataproc-temp"
-input_directory = "gs://pgii-raw/vacinacao_covid19/csv/*"
+input_directory = "gs://pgii-bronze/vacinacao_covid19/csv/*"
 tablename = 'vacinacao_covid19'
-output_directory = "gs://pgii-trusted/vacinacao_covid19/csv/*"
+output_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
 
 # %%
 spark = SparkSession.builder \

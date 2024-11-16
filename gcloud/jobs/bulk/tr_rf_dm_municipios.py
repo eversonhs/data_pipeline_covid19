@@ -19,8 +19,8 @@ import os
 # %%
 tablename = 'dm_municipios'
 temp_bucket = "gs://pgii-dataproc-temp"
-input_directory = "gs://pgii-trusted/vacinacao_covid19/csv/*"
-output_directory = f"gs://pgii-refined/{tablename}"
+input_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
+output_directory = f"gs://pgii-gold/{tablename}"
 
 # %% [markdown]
 # ### 1.2. Configuração do contexto Spark

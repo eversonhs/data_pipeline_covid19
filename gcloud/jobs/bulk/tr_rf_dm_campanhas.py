@@ -19,9 +19,9 @@ from pyspark.sql.functions import col, xxhash64
 
 # %%
 temp_bucket = "gs://pgii-dataproc-temp"
-input_directory = "gs://pgii-trusted/vacinacao_covid19/csv/*"
+input_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
 tablename = 'dm_campanhas'
-output_directory = f"gs://pgii-refined/{tablename}"
+output_directory = f"gs://pgii-gold/{tablename}"
 
 # %%
 spark = SparkSession.builder \

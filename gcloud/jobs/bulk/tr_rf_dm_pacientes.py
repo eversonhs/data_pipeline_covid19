@@ -16,9 +16,9 @@ from pyspark.sql.functions import col, xxhash64
 
 # %%
 temp_bucket = "gs://pgii-dataproc-temp"
-input_directory = "gs://pgii-trusted/vacinacao_covid19/csv/*"
+input_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
 tablename = 'dm_pacientes'
-output_directory = f"gs://pgii-refined/{tablename}"
+output_directory = f"gs://pgii-gold/{tablename}"
 
 # %% [markdown]
 # ### 1.2. Configuração do contexto Spark

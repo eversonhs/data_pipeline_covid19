@@ -17,13 +17,13 @@ from pyspark.sql.functions import col, xxhash64, lit
 # %%
 tablename = 'ft_vacinacao'
 temp_bucket = "gs://pgii-dataproc-temp"
-output_directory = f"gs://pgii-refined/{tablename}"
-input_directory = "gs://pgii-trusted/vacinacao_covid19/csv/*"
-input_directory_1 = "gs://pgii-refined/dm_pacientes"
-input_directory_2 = "gs://pgii-refined/dm_vacinas"
-input_directory_3 = "gs://pgii-refined/dm_campanhas"
-input_directory_4 = "gs://pgii-refined/dm_estabelecimentos"
-input_directory_5 = "gs://pgii-refined/dm_municipios"
+output_directory = f"gs://pgii-gold/{tablename}"
+input_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
+input_directory_1 = "gs://pgii-gold/dm_pacientes"
+input_directory_2 = "gs://pgii-gold/dm_vacinas"
+input_directory_3 = "gs://pgii-gold/dm_campanhas"
+input_directory_4 = "gs://pgii-gold/dm_estabelecimentos"
+input_directory_5 = "gs://pgii-gold/dm_municipios"
 
 # %% [markdown]
 # ### 1.2. Configuração do contexto Spark
