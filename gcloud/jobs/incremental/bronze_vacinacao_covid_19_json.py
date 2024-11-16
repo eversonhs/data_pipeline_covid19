@@ -1,19 +1,16 @@
 import argparse
 import requests
-from pathlib import Path
+from google.cloud import storage
 import os
 import logging
 import json
-from datetime import datetime, UTC
+from datetime import datetime
 
 # Execution Date
 parser = argparse.ArgumentParser()
 parser.add_argument('--date', type=str, required=True)
 known_args, args_cli = parser.parse_known_args()
 ingest_date = datetime.strptime(known_args.date, "%Y-%m-%d")
-
-today = datetime.now(UTC)
-data_directory = Path(os.environ["DATA_PATH"])
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -42,10 +39,12 @@ query = {
     ]
 }
 
-# Data directory
+# GCS Bucket
+bronze_bucket = "pgii-bronze"
+storage_client = storage.Client()
+bucket = storage_client.bucket(bronze_bucket)
 partitioning_folders='{0:4d}/{1:02d}/{2:02d}'.format(ingest_date.year, ingest_date.month, ingest_date.day)
-file_directory = data_directory.joinpath(partitioning_folders)
-file_directory.mkdir(parents=True, exist_ok=True)
+file_directory = "/".join("json", partitioning_folders)
 
 # Making requests
 getting_data = True
@@ -65,8 +64,8 @@ while getting_data:
         query.update({
             'search_after': latest_sort
         })
-        filepath = file_directory.joinpath(filename)
-        with open(filepath, 'w+') as file:
+        blob = bucket.blob("/".join(file_directory, filename))
+        with blob.open("w") as file:
             logger.info(f'Writing to file {filename}')
             file.write(json.dumps(data))
             logger.info(f'Written to file {filename}')
