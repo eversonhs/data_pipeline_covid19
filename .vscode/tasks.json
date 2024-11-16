@@ -6,7 +6,7 @@
         {
             "label": "Submit Spark Job",
             "type": "shell",
-            "command": "docker exec spark-client bash -c 'spark-submit --master $SPARK_MASTER_URI --jars $POSTGRESQL_JDBC_DRIVER --driver-class-path $POSTGRESQL_JDBC_DRIVER --executor-memory 8g --executor-cores 4 ./jobs/${fileBasename} ${input:date}'"
+            "command": "docker exec spark-client bash -c 'spark-submit --master $SPARK_MASTER_URI --jars $POSTGRESQL_JDBC_DRIVER --driver-class-path $POSTGRESQL_JDBC_DRIVER --executor-memory 6g --executor-cores 4 ./jobs/bulk/${fileBasename} ${input:date}'"
         }
     ],
     "inputs": [
