@@ -32,11 +32,11 @@ def parse_args():
         help="day of execution",
     )
     known_args = parser.parse_args()
-    return known_args.year, known_args.month, known_args.day
+    return known_args
 
 exec_args = parse_args()
 input_directory = f"gs://pgii-bronze/vacinacao_covid19/json/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/*"
-output_directory = f"gs://pgii-silver/vacinacao_covid19/json/"
+output_directory = f"gs://pgii-silver/vacinacao_covid19/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/"
 temp_bucket = "gs://pgii-dataproc-temp"
 
 # %% [markdown]
