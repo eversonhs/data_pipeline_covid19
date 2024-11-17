@@ -13,13 +13,39 @@
 # %%
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, xxhash64
-from pathlib import Path
-import os
+from delta.tables import DeltaTable
+import argparse
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--year',
+        help="Year of execution",
+        default='*'
+    )
+    parser.add_argument(
+        '--month',
+        help="month of execution",
+        default='*'
+    )
+    parser.add_argument(
+        '--day',
+        help="day of execution",
+        default='*'
+    )
+
+    known_args = parser.parse_args()
+    return known_args
+
+# %% [markdown]
+# ### 1.2. Configuração do contexto Spark
+
+# %%
+exec_args = parse_args()
 # %%
 tablename = 'dm_vacinas'
 temp_bucket = "gs://pgii-dataproc-temp"
-input_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
+input_directory = f"gs://pgii-silver/vacinacao_covid19/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/*"
 output_directory = f"gs://pgii-gold/{tablename}"
 
 # %% [markdown]
@@ -28,6 +54,8 @@ output_directory = f"gs://pgii-gold/{tablename}"
 # %%
 spark = SparkSession.builder \
     .appName(f"covid_19_vacination_{tablename}") \
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
     .getOrCreate()
 
 spark.conf.set('temporaryGcsBucket', temp_bucket)
@@ -56,11 +84,26 @@ df_vacina = (
 )
 
 # %%
-df_vacina.write.mode('overwrite').format('parquet').save(output_directory)
+# Merge operation
+if DeltaTable.isDeltaTable(spark, output_directory):
+    df_vacina_old = DeltaTable.forPath(spark, output_directory)
+    (
+        df_vacina_old
+        .alias("target")
+        .merge(df_vacina.alias("source"), "target.SK_DM_VACINAS=source.SK_DM_VACINAS")
+        .whenMatchedUpdateAll()
+        .whenNotMatchedInsertAll()
+        .execute()
+    )
+else:
+    df_vacina.write.mode('overwrite').format('delta').save(output_directory)
+    
+# %%
+dm_vacinas = spark.read.format("delta").load(output_directory)
 
 # %%
 (
-    df_vacina
+    dm_vacinas
     .write
     .format('bigquery')
     .option('table', f'ds_pgii.{tablename}')

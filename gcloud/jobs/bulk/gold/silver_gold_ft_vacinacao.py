@@ -13,12 +13,41 @@
 # %%
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, xxhash64, lit
+from delta.tables import DeltaTable
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--year',
+        help="Year of execution",
+        default='*'
+    )
+    parser.add_argument(
+        '--month',
+        help="month of execution",
+        default='*'
+    )
+    parser.add_argument(
+        '--day',
+        help="day of execution",
+        default='*'
+    )
+
+    known_args = parser.parse_args()
+    return known_args
+
+# %% [markdown]
+# ### 1.2. Configuração do contexto Spark
 
 # %%
+
+# %%
+exec_args = parse_args()
 tablename = 'ft_vacinacao'
 temp_bucket = "gs://pgii-dataproc-temp"
 output_directory = f"gs://pgii-gold/{tablename}"
-input_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
+input_directory = f"gs://pgii-silver/vacinacao_covid19/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/*"
 input_directory_1 = "gs://pgii-gold/dm_pacientes"
 input_directory_2 = "gs://pgii-gold/dm_vacinas"
 input_directory_3 = "gs://pgii-gold/dm_campanhas"
@@ -31,6 +60,8 @@ input_directory_5 = "gs://pgii-gold/dm_municipios"
 # %%
 spark = SparkSession.builder \
     .appName(f"covid_19_vacination_{tablename}") \
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
     .getOrCreate()
 
 spark.conf.set('temporaryGcsBucket', temp_bucket)
@@ -60,7 +91,7 @@ df_vacinacao = (
 dm_pacientes = (
     spark
     .read
-    .format('parquet')
+    .format('delta')
     .load(input_directory_1)
     .select(
         'CD_PACIENTE',
@@ -71,7 +102,7 @@ dm_pacientes = (
 dm_vacinas = (
     spark
     .read
-    .format('parquet')
+    .format('delta')
     .load(input_directory_2)
     .select(
         'CD_VACINA',
@@ -83,7 +114,7 @@ dm_vacinas = (
 dm_campanhas = (
     spark
     .read
-    .format('parquet')
+    .format('delta')
     .load(input_directory_3)
     .select(
         'CD_GRUPO_ATENDIMENTO',
@@ -96,7 +127,7 @@ dm_campanhas = (
 dm_estabelecimentos = (
     spark
     .read
-    .format('parquet')
+    .format('delta')
     .load(input_directory_4)
     .select(
         'CD_ESTABELECIMENTO',
@@ -107,7 +138,7 @@ dm_estabelecimentos = (
 dm_municipios = (
     spark
     .read
-    .format('parquet')
+    .format('delta')
     .load(input_directory_5)
     .select(
         'CD_MUNICIPIO_IBGE',
@@ -158,7 +189,7 @@ df_vacinacao = (
 )
 
 # %%
-df_vacinacao.write.mode('overwrite').format('parquet').save(output_directory)
+df_vacinacao.write.mode('append').format('delta').save(output_directory)
 
 # %%
 (
@@ -166,6 +197,6 @@ df_vacinacao.write.mode('overwrite').format('parquet').save(output_directory)
     .write
     .format('bigquery')
     .option('table', f'ds_pgii.{tablename}')
-    .mode('overwrite')
+    .mode('append')
     .save()
 )
