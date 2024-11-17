@@ -14,7 +14,7 @@
 import argparse
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
-
+from datetime import datetime
 # %% [markdown]
 # 1.2. Configuração do argparse
 def parse_args():
@@ -31,12 +31,23 @@ def parse_args():
         '--day',
         help="day of execution",
     )
+    parser.add_argument(
+        '--output_date',
+        help="day of execution in format YYYY-MM-DD",
+        required=False,
+        type=lambda x: datetime.strptime(x, "%Y-%m-%d")
+    )
+
     known_args = parser.parse_args()
+    if known_args.output_date is None:
+        known_args.output_date = datetime.strptime(f"{known_args.year}-{known_args.month}-{known_args.day}", "%Y-%m-%d")
+
     return known_args
 
 exec_args = parse_args()
 input_directory = f"gs://pgii-bronze/vacinacao_covid19/json/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/*"
-output_directory = f"gs://pgii-silver/vacinacao_covid19/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/"
+output_partition = exec_args.output_date.strftime("%Y/%m/%d")
+output_directory = f"gs://pgii-silver/vacinacao_covid19/{output_partition}/"
 temp_bucket = "gs://pgii-dataproc-temp"
 
 # %% [markdown]

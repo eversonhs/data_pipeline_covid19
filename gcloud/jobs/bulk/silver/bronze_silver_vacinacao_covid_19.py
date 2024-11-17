@@ -13,16 +13,34 @@
 # %%
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
-from pathlib import Path
-import os
+from datetime import datetime, UTC
+import argparse
+
+def parse_args():
+    today = datetime.now(UTC)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--output_date',
+        help="day of execution in format YYYY-MM-DD",
+        required=False,
+        default=today,
+        type=lambda x: datetime.strptime(x, "%Y-%m-%d")
+    )
+
+    known_args = parser.parse_args()
+
+    return known_args
+
 
 # %% [markdown]
 # ### 1.2. Configuração do contexto Spark
 
+exec_args = parse_args()
 temp_bucket = "gs://pgii-dataproc-temp"
 input_directory = "gs://pgii-bronze/vacinacao_covid19/csv/*"
 tablename = 'vacinacao_covid19'
-output_directory = "gs://pgii-silver/vacinacao_covid19/csv/*"
+output_partition = exec_args.output_date.strftime("%Y/%m/%d")
+output_directory = f"gs://pgii-silver/vacinacao_covid19/{output_partition}/"
 
 # %%
 spark = SparkSession.builder \
@@ -31,8 +49,6 @@ spark = SparkSession.builder \
 
 spark.conf.set('temporaryGcsBucket', temp_bucket)
 
-# %%
-data_path = Path(os.environ["DATA_PATH"])
 
 # %% [markdown]
 # ## 2.0. Leitura dos dados
