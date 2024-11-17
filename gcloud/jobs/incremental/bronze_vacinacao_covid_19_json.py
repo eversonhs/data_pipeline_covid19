@@ -1,10 +1,17 @@
 import argparse
 import requests
 from google.cloud import storage
-import os
 import logging
 import json
 from datetime import datetime
+from google.cloud import secretmanager
+import json
+
+secret_manager_client = secretmanager.SecretManagerServiceClient()
+secret_version = "projects/projeto-graduacao-ii/secrets/open-datasus-vacinacao-covid19/versions/latest"
+request = secretmanager.AccessSecretVersionRequest(name=secret_version)
+response = secret_manager_client.access_secret_version(request=request)
+secret_value = json.loads(response.payload.data.decode("utf-8"))
 
 # Execution Date
 parser = argparse.ArgumentParser()
@@ -18,8 +25,8 @@ logger.setLevel(logging.INFO)
 logger.info('Initializing application')
 # Request Config
 base_url = 'https://imunizacao-es.saude.gov.br/'
-username = os.environ['API_USERNAME']
-password = os.environ['API_PASSWORD']
+username = secret_value['API_USERNAME']
+password = secret_value['API_PASSWORD']
 
 headers = {
     'Content-Type': 'application/json',
