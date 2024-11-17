@@ -4,14 +4,6 @@ from google.cloud import storage
 import logging
 import json
 from datetime import datetime
-from google.cloud import secretmanager
-import json
-
-secret_manager_client = secretmanager.SecretManagerServiceClient()
-secret_version = "projects/projeto-graduacao-ii/secrets/open-datasus-vacinacao-covid19/versions/latest"
-request = secretmanager.AccessSecretVersionRequest(name=secret_version)
-response = secret_manager_client.access_secret_version(request=request)
-secret_value = json.loads(response.payload.data.decode("utf-8"))
 
 # Execution Date
 parser = argparse.ArgumentParser()
@@ -25,8 +17,9 @@ logger.setLevel(logging.INFO)
 logger.info('Initializing application')
 # Request Config
 base_url = 'https://imunizacao-es.saude.gov.br/'
-username = secret_value['API_USERNAME']
-password = secret_value['API_PASSWORD']
+# Não é boa prática, mas as credencias estão disponível no link da api de forma pública
+username = "imunizacao_public"
+password = "qlto5t&7r_@+#Tlstigi"
 
 headers = {
     'Content-Type': 'application/json',
@@ -51,13 +44,13 @@ bronze_bucket = "pgii-bronze"
 storage_client = storage.Client()
 bucket = storage_client.bucket(bronze_bucket)
 partitioning_folders='{0:4d}/{1:02d}/{2:02d}'.format(ingest_date.year, ingest_date.month, ingest_date.day)
-file_directory = "/".join("json", partitioning_folders)
+file_directory = "/".join(["json", partitioning_folders])
 
 # Making requests
 getting_data = True
 iterator = 1
 while getting_data:
-    filename = f'{ingest_date.strftime('%Y-%m-%d')}_{iterator}.json'
+    filename = f"{ingest_date.strftime('%Y-%m-%d')}_{iterator}.json"
     url = '/'.join([base_url, 'desc-imunizacao', '_search'])
     logger.info(f'Iteration {iterator}')
     logger.info(f'Requesting data to {url}')
@@ -71,7 +64,7 @@ while getting_data:
         query.update({
             'search_after': latest_sort
         })
-        blob = bucket.blob("/".join(file_directory, filename))
+        blob = bucket.blob("/".join([file_directory, filename]))
         with blob.open("w") as file:
             logger.info(f'Writing to file {filename}')
             file.write(json.dumps(data))
