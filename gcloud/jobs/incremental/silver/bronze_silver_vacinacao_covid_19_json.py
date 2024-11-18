@@ -135,6 +135,7 @@ df_vacinacao = (
 df_vacinacao = (
     df_vacinacao
     .withColumn('vacina_dataAplicacao', regexp_replace('vacina_dataAplicacao', '[^0-9]', ''))
+    .withColumn('vacina_dataAplicacao', substring('vacina_dataAplicacao', 1, 8))
     .withColumn('vacina_dataAplicacao', to_date('vacina_dataAplicacao', format='yyyyMMdd'))
 )
 
