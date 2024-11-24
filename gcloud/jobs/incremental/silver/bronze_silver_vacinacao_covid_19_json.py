@@ -12,6 +12,7 @@
 
 # %%
 import argparse
+from pyspark.sql.types import IntegerType, StringType, DateType
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from datetime import datetime
@@ -75,38 +76,38 @@ df_vacinacao = (
 
 # ## 2.1. Seleção dos campos que serão utilizados
 df_vacinacao = df_vacinacao.select(
-    'document_id',
-    'paciente_id',
-    'paciente_idade',
-    'paciente_dataNascimento',
-    'paciente_enumSexoBiologico',
-    'paciente_racaCor_codigo',
-    'paciente_racaCor_valor',
-    'paciente_endereco_coIbgeMunicipio',
-    'paciente_endereco_coPais',
-    'paciente_endereco_nmMunicipio',
-    'paciente_endereco_nmPais',
-    'paciente_endereco_uf',
-    'paciente_endereco_cep',
-    'paciente_nacionalidade_enumNacionalidade',
-    'estabelecimento_valor',
-    'estabelecimento_razaoSocial',
-    'estalecimento_noFantasia',
-    'estabelecimento_municipio_codigo',
-    'estabelecimento_municipio_nome',
-    'estabelecimento_uf',
-    'vacina_grupoAtendimento_codigo',
-    'vacina_grupoAtendimento_nome',
-    'vacina_categoria_codigo',
-    'vacina_categoria_nome',
-    'vacina_lote',
-    'vacina_fabricante_nome',
-    'vacina_fabricante_referencia',
-    'vacina_dataAplicacao',
-    'vacina_descricao_dose',
-    'vacina_codigo',
-    'vacina_nome',
-    'sistema_origem'
+    col("document_id").cast(StringType()),
+    col("paciente_id").cast(StringType()),
+    col("paciente_idade").cast(IntegerType()),
+    col("paciente_dataNascimento").cast(DateType()),
+    col("paciente_enumSexoBiologico").cast(StringType()),
+    col("paciente_racaCor_codigo").cast(StringType()),
+    col("paciente_racaCor_valor").cast(StringType()),
+    col("paciente_endereco_coIbgeMunicipio").cast(StringType()),
+    col("paciente_endereco_coPais").cast(StringType()),
+    col("paciente_endereco_nmMunicipio").cast(StringType()),
+    col("paciente_endereco_nmPais").cast(StringType()),
+    col("paciente_endereco_uf").cast(StringType()),
+    col("paciente_endereco_cep").cast(StringType()),
+    col("paciente_nacionalidade_enumNacionalidade").cast(StringType()),
+    col("estabelecimento_valor").cast(IntegerType()),
+    col("estabelecimento_razaoSocial").cast(StringType()),
+    col("estalecimento_noFantasia").cast(StringType()),
+    col("estabelecimento_municipio_codigo").cast(IntegerType()),
+    col("estabelecimento_municipio_nome").cast(StringType()),
+    col("estabelecimento_uf").cast(StringType()),
+    col("vacina_grupoAtendimento_codigo").cast(IntegerType()),
+    col("vacina_grupoAtendimento_nome").cast(StringType()),
+    col("vacina_categoria_codigo").cast(IntegerType()),
+    col("vacina_categoria_nome").cast(StringType()),
+    col("vacina_lote").cast(StringType()),
+    col("vacina_fabricante_nome").cast(StringType()),
+    col("vacina_fabricante_referencia").cast(StringType()),
+    col("vacina_dataAplicacao").cast(DateType()),
+    col("vacina_descricao_dose").cast(StringType()),
+    col("vacina_codigo").cast(IntegerType()),
+    col("vacina_nome").cast(StringType()),
+    col("sistema_origem").cast(StringType())
 )
 
 # %%
