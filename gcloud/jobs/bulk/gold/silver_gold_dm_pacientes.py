@@ -12,8 +12,9 @@
 
 # %%
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, xxhash64
+from pyspark.sql.functions import col, xxhash64, row_number
 from delta.tables import DeltaTable
+from pyspark.sql.window import Window
 import argparse
 
 def parse_args():
@@ -73,14 +74,30 @@ df_paciente = (
         col('paciente_enumSexoBiologico').alias('SG_SEXO_BIOLOGICO'),
         col('paciente_racaCor_codigo').alias('CD_RACA_COR'),
         col('paciente_racaCor_valor').alias('DSC_RACA_CORD'),
-        col('paciente_nacionalidade_enumNacionalidade').alias('CD_NACIONALIDADE')
+        col('paciente_nacionalidade_enumNacionalidade').alias('CD_NACIONALIDADE'),
+        col('vacina_dataAplicacao').alias("DT_VACINACAO")
     )
-    .dropDuplicates(subset=['CD_PACIENTE', 'CD_RACA_COR'])
 )
+
+# %%
+# Mantém apenas os registros mais recentes de cada paciente
+window_spec = Window.partitionBy("CD_PACIENTE").orderBy(col("DT_VACINACAO").desc())
+
+df_paciente = (
+    df_paciente
+    .select(
+        '*',
+        (row_number().over(window_spec)).alias('rank')
+    )
+    .filter(col('rank') == 1)
+    .drop('rank')
+    .drop('DT_VACINACAO')
+)
+
 # %%
 df_paciente = (
     df_paciente
-    .withColumn('SK_DM_PACIENTES', xxhash64('CD_PACIENTE', 'CD_RACA_COR'))
+    .withColumn('SK_DM_PACIENTES', xxhash64('CD_PACIENTE'))
 )
 
 # %%
