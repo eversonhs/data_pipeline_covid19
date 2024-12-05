@@ -19,21 +19,10 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--year',
-        help="Year of execution",
+        '--date',
+        help="date of execution",
         default='*'
     )
-    parser.add_argument(
-        '--month',
-        help="month of execution",
-        default='*'
-    )
-    parser.add_argument(
-        '--day',
-        help="day of execution",
-        default='*'
-    )
-
     known_args = parser.parse_args()
     return known_args
 
@@ -45,7 +34,8 @@ exec_args = parse_args()
 # %%
 tablename = 'dm_vacinas'
 temp_bucket = "gs://pgii-dataproc-temp"
-input_directory = f"gs://pgii-silver/vacinacao_covid19/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/*"
+exec_year, exec_month, exec_day = tuple(exec_args.date.split("-")) if exec_args.date != "*" else ("*", "*", "*")
+input_directory = f"gs://pgii-silver/vacinacao_covid19/{{{exec_year}}}/{{{exec_month}}}/{{{exec_day}}}/*"
 output_directory = f"gs://pgii-gold/{tablename}"
 
 # %% [markdown]
