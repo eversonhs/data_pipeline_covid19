@@ -15,39 +15,24 @@ import argparse
 from pyspark.sql.types import IntegerType, StringType, DateType
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
-from datetime import datetime
 # %% [markdown]
 # 1.2. Configuração do argparse
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--year',
-        help="Year of execution",
-    )
-    parser.add_argument(
-        '--month',
-        help="month of execution",
-    )
-    parser.add_argument(
-        '--day',
-        help="day of execution",
-    )
-    parser.add_argument(
         '--output_date',
         help="day of execution in format YYYY-MM-DD",
-        required=False,
-        type=lambda x: datetime.strptime(x, "%Y-%m-%d")
+        required=False
     )
 
     known_args = parser.parse_args()
-    if known_args.output_date is None:
-        known_args.output_date = datetime.strptime(f"{known_args.year}-{known_args.month}-{known_args.day}", "%Y-%m-%d")
 
     return known_args
 
 exec_args = parse_args()
-input_directory = f"gs://pgii-bronze/vacinacao_covid19/json/{{{exec_args.year}}}/{{{exec_args.month}}}/{{{exec_args.day}}}/*"
-output_partition = exec_args.output_date.strftime("%Y/%m/%d")
+exec_year, exec_month, exec_day = tuple(exec_args.output_date.split("-")) if exec_args.output_date != "*" else ("*", "*", "*")
+input_directory = f"gs://pgii-bronze/vacinacao_covid19/json/{{{exec_year}}}/{{{exec_month}}}/{{{exec_day}}}/*"
+output_partition = "/".join(exec_args.output_date.split("-"))
 output_directory = f"gs://pgii-silver/vacinacao_covid19/{output_partition}/"
 temp_bucket = "gs://pgii-dataproc-temp"
 

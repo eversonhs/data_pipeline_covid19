@@ -1,7 +1,6 @@
 
-from datetime import timedelta, datetime
+from datetime import datetime
 from airflow import DAG
-from airflow.operators.bash import BashOperator
 from airflow.providers.google.cloud.operators.dataproc import (
     DataprocCreateBatchOperator
 )
@@ -15,27 +14,23 @@ default_args = {
 }
 
 with DAG(
-    'vacinacao_covid19',
+    'vacinacao_covid19_csv',
     default_args=default_args,
-    description='Daily update of COVID19 vacination status',
-    schedule_interval=timedelta(days=1),
-    start_date=datetime(2024, 11, 16),
-    catchup=True,
+    description='First execution of COVID-19 vacination pipeline',
+    start_date=datetime(2024,11, 6),
     tags=['vacinacao_covid19'],
+    schedule=None,
+    catchup=False
 ) as dag:
-    now = datetime.now()
-    ingestion_task = BashOperator(
-        task_id='ingest_vacinacao_covid19',
-        bash_command='''gcloud storage cp --recursive gs://pgii-composer/jobs ~/ &&
-        python ~/jobs/bronze/bronze_vacinacao_covid_19_json.py --date={{ ds }}'''
-    )
+    
+    exec_date = datetime(2023, 11, 6)
 
     bronze_silver_task = DataprocCreateBatchOperator(
-        task_id=f"create_job_bronze_silver",
+        task_id=f"create_job_bronze_silver_csv",
         batch={
             "pyspark_batch": {
-                "main_python_file_uri": "gs://pgii-dataproc/silver/bronze_silver_vacinacao_covid_19_json.py",
-                "args": ["--output_date", "{{ ds }}"]
+                "main_python_file_uri": "gs://pgii-dataproc/silver/bronze_silver_vacinacao_covid_19.py",
+                "args": ["--output_date", exec_date.strftime("%Y-%m-%d")]
             },
             "environment_config": {
                 "execution_config": {
@@ -44,7 +39,7 @@ with DAG(
             },
         },
         region="us-central1",
-        batch_id=f'bronze-silver-vacinacao-covid19-{now.strftime("%Y%m%d%H%M%S")}',
+        batch_id=f'bronze-silver-vacinacao-covid19-csv-{exec_date.strftime("%Y%m%d%H%M%S")}',
     )
     
     silver_gold_dm_campanhas = DataprocCreateBatchOperator(
@@ -52,7 +47,7 @@ with DAG(
         batch={
             "pyspark_batch": {
                 "main_python_file_uri": "gs://pgii-dataproc/gold/silver_gold_dm_campanhas.py",
-                "args": ["--date", "{{ ds }}"]
+                "args": ["--date", exec_date.strftime("%Y-%m-%d")]
             },
             "runtime_config": {
                 "properties": {
@@ -66,7 +61,7 @@ with DAG(
             },
         },
         region="us-central1",
-        batch_id=f'silver-gold-dm-campanhas-{now.strftime("%Y%m%d%H%M%S")}',
+        batch_id=f'silver-gold-dm-campanhas-{exec_date.strftime("%Y%m%d%H%M%S")}',
     )
     
     silver_gold_dm_estabelecimentos = DataprocCreateBatchOperator(
@@ -74,7 +69,7 @@ with DAG(
         batch={
             "pyspark_batch": {
                 "main_python_file_uri": "gs://pgii-dataproc/gold/silver_gold_dm_estabelecimentos.py",
-                "args": ["--date", "{{ ds }}"]
+                "args": ["--date", exec_date.strftime("%Y-%m-%d")]
             },
             "runtime_config": {
                 "properties": {
@@ -88,7 +83,7 @@ with DAG(
             },
         },
         region="us-central1",
-        batch_id=f'silver-gold-dm-estabelecimentos-{now.strftime("%Y%m%d%H%M%S")}',
+        batch_id=f'silver-gold-dm-estabelecimentos-{exec_date.strftime("%Y%m%d%H%M%S")}',
     )
     
     silver_gold_dm_vacinas = DataprocCreateBatchOperator(
@@ -96,7 +91,7 @@ with DAG(
         batch={
             "pyspark_batch": {
                 "main_python_file_uri": "gs://pgii-dataproc/gold/silver_gold_dm_vacinas.py",
-                "args": ["--date", "{{ ds }}"]
+                "args": ["--date", exec_date.strftime("%Y-%m-%d")]
             },
             "runtime_config": {
                 "properties": {
@@ -110,7 +105,7 @@ with DAG(
             },
         },
         region="us-central1",
-        batch_id=f'silver-gold-dm-vacinas-{now.strftime("%Y%m%d%H%M%S")}',
+        batch_id=f'silver-gold-dm-vacinas-{exec_date.strftime("%Y%m%d%H%M%S")}',
     )
     
     silver_gold_dm_municipios = DataprocCreateBatchOperator(
@@ -118,7 +113,7 @@ with DAG(
         batch={
             "pyspark_batch": {
                 "main_python_file_uri": "gs://pgii-dataproc/gold/silver_gold_dm_municipios.py",
-                "args": ["--date", "{{ ds }}"]
+                "args": ["--date", exec_date.strftime("%Y-%m-%d")]
             },
             "runtime_config": {
                 "properties": {
@@ -132,7 +127,7 @@ with DAG(
             },
         },
         region="us-central1",
-        batch_id=f'silver-gold-dm-municipios-{now.strftime("%Y%m%d%H%M%S")}',
+        batch_id=f'silver-gold-dm-municipios-{exec_date.strftime("%Y%m%d%H%M%S")}',
     )
 
     silver_gold_dm_pacientes = DataprocCreateBatchOperator(
@@ -140,7 +135,7 @@ with DAG(
         batch={
             "pyspark_batch": {
                 "main_python_file_uri": "gs://pgii-dataproc/gold/silver_gold_dm_pacientes.py",
-                "args": ["--date", "{{ ds }}"]
+                "args": ["--date", exec_date.strftime("%Y-%m-%d")]
             },
             "runtime_config": {
                 "properties": {
@@ -154,7 +149,7 @@ with DAG(
             },
         },
         region="us-central1",
-        batch_id=f'silver-gold-dm-pacientes-{now.strftime("%Y%m%d%H%M%S")}',
+        batch_id=f'silver-gold-dm-pacientes-{exec_date.strftime("%Y%m%d%H%M%S")}',
     )
 
     silver_gold_ft_vacinacao = DataprocCreateBatchOperator(
@@ -162,7 +157,7 @@ with DAG(
         batch={
             "pyspark_batch": {
                 "main_python_file_uri": "gs://pgii-dataproc/gold/silver_gold_ft_vacinacao.py",
-                "args": ["--date", "{{ ds }}"]
+                "args": ["--date", exec_date.strftime("%Y-%m-%d")]
             },
             "runtime_config": {
                 "properties": {
@@ -176,10 +171,10 @@ with DAG(
             },
         },
         region="us-central1",
-        batch_id=f'silver-gold-ft-vacinacao-{now.strftime("%Y%m%d%H%M%S")}',
+        batch_id=f'silver-gold-ft-vacinacao-{exec_date.strftime("%Y%m%d%H%M%S")}',
     )
    
-    ingestion_task >> bronze_silver_task >>  \
+    bronze_silver_task >>  \
     silver_gold_dm_campanhas >> silver_gold_dm_estabelecimentos >> \
     silver_gold_dm_vacinas >> silver_gold_dm_municipios >> \
     silver_gold_dm_pacientes >> silver_gold_ft_vacinacao

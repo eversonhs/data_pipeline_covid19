@@ -44,7 +44,7 @@ bronze_bucket = "pgii-bronze"
 storage_client = storage.Client()
 bucket = storage_client.bucket(bronze_bucket)
 partitioning_folders='{0:4d}/{1:02d}/{2:02d}'.format(ingest_date.year, ingest_date.month, ingest_date.day)
-file_directory = "/".join(["json", partitioning_folders])
+file_directory = "/".join(["vacinacao_covid19", "json", partitioning_folders])
 
 # Making requests
 getting_data = True
